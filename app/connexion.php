@@ -1,5 +1,5 @@
-<?php 
-include '../includes/config_bdd.php'; 
+<?php
+include '../includes/config_bdd.php';
 
     if(isset($_POST['submit']))
     {
@@ -11,12 +11,12 @@ include '../includes/config_bdd.php';
             $query = $bdd->prepare("SELECT * FROM UTILISATEUR WHERE MAIL_UTI = ? AND MDP_UTI = SHA1(?)");
             $query -> execute(array($email, $password));
             $user = $query -> rowCount();
-            
+
             if($user > 0)
             {
                 $user_infos = $query->fetch();
 
-                session_start(); 
+                session_start();
                 $_SESSION['user_id'] = $user_infos['NUM_UTI'];
                 $_SESSION['user_firstname'] = $user_infos['PRENOM_UTI'];
                 $_SESSION['user_name'] = $user_infos['NOM_UTI'];
@@ -29,7 +29,7 @@ include '../includes/config_bdd.php';
 
                 if($_SESSION['user_admin'] == 1)
                     header('location:index.php?p=administration');
-                else 
+                else
                     header("location:index.php?p=consultation");
             }
             else
@@ -42,13 +42,13 @@ include '../includes/config_bdd.php';
 
 <?php include '../includes/templates/header.php'; ?>
 
-<div class="container">    
-        <div id="loginbox" style="margin-top:50px;" class="mainbox col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2">                    
+<div class="container">
+        <div id="loginbox" style="margin-top:50px;" class="mainbox col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2">
             <div class="panel panel-info" >
                     <div class="panel-heading">
                         <div class="panel-title">CONNEXION</div>
                         <div style="float:right; font-size: 80%; position: relative; top:-10px"><a href="#">Mot de passe oublié?</a></div>
-                    </div>     
+                    </div>
 
                     <div style="padding-top:30px" class="panel-body" >
                     <?php
@@ -56,25 +56,25 @@ include '../includes/config_bdd.php';
                         {?>
                             <div id="erreur"><b><?= $erreur; ?></b></div>
                         <?php } ?>
-                        
+
                         <div style="display:none" id="login-alert" class="alert alert-danger col-sm-12"></div>
-                            
+
                         <form id="loginform" class="form-horizontal" role="form" action="connexion.php" method="post">
-                                    
+
                             <div style="margin-bottom: 25px" class="input-group">
                                         <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
-                                        <input id="login-username" type="email" class="form-control" name="email" required  placeholder="saisissez votre email">                                        
+                                        <input id="login-username" type="email" class="form-control" name="email" required  placeholder="saisissez votre email">
                                     </div>
-                                
+
                             <div style="margin-bottom: 25px" class="input-group">
                                         <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
                                         <input id="login-password" type="password" class="form-control" name="password" required  placeholder="saisissez votre mot de passe">
                                     </div>
-                                    
 
-                                
+
+
                             <div class="input-group">
-                                     
+
                                 <div style="margin-top:10px" class="form-group">
 
                                     <div class="col-sm-12 controls">
@@ -90,12 +90,11 @@ include '../includes/config_bdd.php';
                                         <a href="index.php?p=inscription">Inscrivez vous ici !</a>
                                         </div>
                                     </div>
-                                </div>    
-                            </form>     
+                                </div>
+                            </form>
 
-                        </div>                     
-                    </div>  
+                        </div>
+                    </div>
         </div>
-       
+
     </div>
-    
