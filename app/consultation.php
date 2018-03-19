@@ -38,6 +38,8 @@ body{margin-top:50px;}
 .comments-list .media{
   border-bottom: 1px dotted #ccc;
 }
+.btn-glyphicon { padding:8px; background:#ffffff; margin-right:4px; }
+.icon-btn { padding: 1px 15px 3px 2px; border-radius:50px;}
 </style>
 
 <?php include '../includes/templates/header.php'; ?>
@@ -174,6 +176,10 @@ body{margin-top:50px;}
                     <br />
                     <p style="text-indent: 15px;"><?= $result_oeuvre['DESCRIPTION'] ?></p>
                     <br />
+                    <br />
+
+                    <a class="btn icon-btn btn-info" href="#"><span class="glyphicon btn-glyphicon glyphicon-plus img-circle text-info"></span>Demande de réservation</a>
+
 
                     <?php
                     if(isset($_SESSION['user_id']))
@@ -194,9 +200,14 @@ body{margin-top:50px;}
                           <label for="comment">Votre commentaire:</label>
                           <textarea class="form-control" rows="5" id="comment" name="commentaire"></textarea>
                         </div>
-                        <button type="submit" id="com" name="valider_commentaire" class="btn btn-default">Valider</button>
+                        <button type="submit" id="com" name="valider_commentaire" class="btn btn-default" onclick="myFunction()">Valider</button>
                       </form>
 
+                      <script>
+                      function myFunction() {
+                        alert("<b>Votre commentaire a été envoyé!</b> Il est maintenant en attente de modération ");
+                      }
+                      </script>
                     </div>
                   </div>
                   <div class="comments-list">
@@ -217,6 +228,8 @@ body{margin-top:50px;}
                           <h4 class="media-heading user_name"><?= $row['PRENOM_UTI'] . ' ' . $row['NOM_UTI'] ?></h4>
                           <?= $row['TEXTE_COM'] ?>
                         </div>
+
+
                       </div>
                       <br />
                       <br />

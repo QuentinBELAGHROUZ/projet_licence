@@ -209,7 +209,7 @@ body{margin-top:50px;}
                 </tr>
                 <tr>
                   <td>
-                    <span class="glyphicon glyphicon-flash text-success"></span><a href="index.php?p=administration&action=categorie">##</a>
+                    <span class="glyphicon glyphicon-flash text-success"></span><a href="index.php?p=administration&action=reservation">Reservations</a>
                   </td>
                 </tr>
                 <tr>
@@ -361,18 +361,18 @@ body{margin-top:50px;}
             <h1>Achat d'un livre</h1>
           </div>
 
-            <form action="administration.php" method="post">
-              <div class="form-group">
-                <label for="oeuvre">Titre oeuvre</label>
-                <input type="text" class="form-control" name="titre_oeuvre" id="titre_oeuvre" placeholder="saisissez le titre de l'eouvre">
-              </div>
+          <form action="administration.php" method="post">
+            <div class="form-group">
+              <label for="oeuvre">Titre oeuvre</label>
+              <input type="text" class="form-control" name="titre_oeuvre" id="titre_oeuvre" placeholder="saisissez le titre de l'eouvre">
+            </div>
 
-              <button type="submit" class="btn btn-default" name="valider_achat_livre">Valider</button>
+            <button type="submit" class="btn btn-default" name="valider_achat_livre">Valider</button>
 
-              <hr />
+            <hr />
 
-              <i>Oeuvre non référencée? <a href="index.php?p=administration&action=oeuvre">Cliquez ici !</a></i>
-            </form>
+            <i>Oeuvre non référencée? <a href="index.php?p=administration&action=oeuvre">Cliquez ici !</a></i>
+          </form>
 
 
 
@@ -414,6 +414,10 @@ body{margin-top:50px;}
           </table>
 
         <?php }
+        else if($_GET['action'] == 'reservation')
+        {
+          echo 'reservation';
+        }
       }
       ?>
 
