@@ -1,0 +1,9 @@
+demande de pret validée
+
+on rentre dans le $_GET
+-on recupere l'id_livre a partir de id_emprunt -> done
+-on update la colonne statut de la table LIVRE -> done
+-on update la table EMPRUNT (date_pret, date_retour, statut);
+-mail acceptation pret
+
+-on redirige vers la page de gestion des prets

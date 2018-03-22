@@ -1,6 +1,7 @@
-<?php session_start(); ?>
-<?php include '../includes/config_bdd.php'; ?>
-<?php include '../fonctions/images.php';
+<?php session_start();
+include '../includes/config_bdd.php';
+include '../fonctions/images.php';
+require '../fonctions/mails.php';
 if(isset($_POST['valider_oeuvre']))
 {
   //contre les injections sql
@@ -86,7 +87,7 @@ else if(isset($_POST['valider_achat_livre']))
 
 if(isset($_GET['action']))
 {
-  if(($_GET['action'] == 'valider_commentaire'))
+  if($_GET['action'] == 'valider_commentaire')
   {
     $valider_com = $bdd -> prepare('UPDATE COMMENTAIRE SET STATUT = 1 WHERE ID_COM = ?');
     $valider_com -> execute(array($_GET['id_com']));
@@ -98,6 +99,44 @@ if(isset($_GET['action']))
     $supprimer_com -> execute(array($_GET['id_com']));
     header('location:index.php?p=administration&action=commentaire');
   }
+  else if($_GET['action'] == 'accepter_pret' OR $_GET['action'] == 'refuser_pret')
+  {
+    $find_id_livre = $bdd -> prepare('SELECT L.ID_LIVRE, O.TITRE_OEUVRE, U.PRENOM_UTI, U.MAIL_UTI FROM EMPRUNT AS E INNER JOIN LIVRE AS L ON E.ID_LIVRE = L.ID_LIVRE INNER JOIN OEUVRE AS O ON L.ID_OEUVRE = O.ID_OEUVRE INNER JOIN UTILISATEUR AS U ON E.NUM_UTI = U.NUM_UTI WHERE ID_EMPRUNT = ?');
+    $find_id_livre -> execute(array($_GET['id_emprunt']));
+    $row = $find_id_livre -> fetch();
+
+    if($_GET['action'] == 'accepter_pret')
+    {
+      $update_statut_livre = $bdd -> prepare('UPDATE LIVRE SET STATUT = 1 WHERE ID_LIVRE = ?');
+      $update_statut_livre -> execute(array($row['ID_LIVRE']));
+
+      date_default_timezone_set('Europe/Paris');
+      $date_pret = date('Y-m-d');
+      $date_retour = date('Y-m-d', strtotime($date_pret.' + 1 month'));
+
+      $update_emprunt = $bdd->prepare('UPDATE EMPRUNT SET DATE_PRET = ?, DATE_RETOUR = ?, STATUT = 1 WHERE ID_EMPRUNT = ?');
+      $update_emprunt -> execute(array($date_pret, $date_retour, $_GET['id_emprunt']));
+
+      envoieMailAcceptation($row['TITRE_OEUVRE'], $row['PRENOM_UTI'], $row['MAIL_UTI']);
+
+      header('location:index.php?p=administration&action=pret');
+    }
+    else if($_GET['action'] == 'refuser_pret')
+    {
+      $delete_emprunt = $bdd -> prepare('DELETE FROM EMPRUNT WHERE ID_EMPRUNT = ?');
+      $delete_emprunt -> execute(array($_GET['id_emprunt']));
+      envoieMailRefus($row['TITRE_OEUVRE'], $row['PRENOM_UTI'], $row['MAIL_UTI']);
+
+      header('location:index.php?p=administration&action=pret');
+    }
+  }
+  else if($_GET['action'] == 'retour_livre')
+  {
+    echo 'procédure de retour d\'un livre';
+  }
+
+
+
 }
 ?>
 
@@ -209,7 +248,7 @@ body{margin-top:50px;}
                 </tr>
                 <tr>
                   <td>
-                    <span class="glyphicon glyphicon-flash text-success"></span><a href="index.php?p=administration&action=reservation">Reservations</a>
+                    <span class="glyphicon glyphicon-flash text-success"></span><a href="index.php?p=administration&action=pret">Prêts</a>
                   </td>
                 </tr>
                 <tr>
@@ -414,15 +453,107 @@ body{margin-top:50px;}
           </table>
 
         <?php }
-        else if($_GET['action'] == 'reservation')
-        {
-          echo 'reservation';
-        }
-      }
-      ?>
+        else if($_GET['action'] == 'pret')
+        { ?>
+          <h2 style="color: #2980b9">Demandes de prêts</h4>
+
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>
+                    UTILISATEUR
+                  </th>
+                  <th>
+                    TITRE OEUVRE
+                  </th>
+                  <th>ID LIVRE</th>
+                  <th>STOCK</th>
+                  <th>ACTION</th>
+                </tr>
+              </thead>
+              <tbody>
+
+                <?php
+                $query_pret = $bdd->query('SELECT E.ID_EMPRUNT,U.NOM_UTI, U.PRENOM_UTI, O.titre_oeuvre, O.id_oeuvre, L.ID_LIVRE
+                  FROM OEUVRE AS O
+                  INNER JOIN LIVRE AS L
+                  ON O.id_oeuvre = L.ID_OEUVRE
+                  INNER JOIN EMPRUNT as E
+                  ON L.ID_LIVRE = E.ID_LIVRE
+                  INNER JOIN UTILISATEUR as U
+                  on E.NUM_UTI = U.NUM_UTI
+                  WHERE E.STATUT = 0');
+                  while( $row = $query_pret -> fetch())
+                  { ?>
+                    <tr>
+                      <td>
+                        <?= $row['PRENOM_UTI'] . ' ' . $row['NOM_UTI'] ?>
+                      </td>
+                      <td><?= strtoupper($row['titre_oeuvre']) ?></td>
+                      <td><?= $row['ID_LIVRE'] ?></td>
+                      <?php
+                      $stock = $bdd -> prepare('SELECT * FROM OEUVRE AS O INNER JOIN LIVRE AS L ON O.id_oeuvre = L.ID_OEUVRE WHERE L.STATUT = 0 AND O.id_oeuvre = ? ');
+                      $stock -> execute(array($row['id_oeuvre']));
+                      $nb_dispo = $stock -> rowCount();
+                      ?>
+                      <td><?= $nb_dispo ?></td>
+                      <td class="text-center"><a class='btn btn-info btn-xs' href='index.php?p=administration&action=accepter_pret&id_emprunt=<?= $row['ID_EMPRUNT'] ?>'><span class="glyphicon glyphicon-ok"></span> Accepter</a> <a href='index.php?p=administration&action=refuser_pret&id_emprunt=<?= $row['ID_EMPRUNT'] ?>' class="btn btn-danger btn-xs"><span class="glyphicon glyphicon-remove"></span> Refuser</a></td>
+                    </tr>
+                  <?php } ?>
+
+                </tbody>
+              </table>
+
+              <br />
+              <br />
+              <h2 style="color: #2980b9">Gestion des retours</h4>
+
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>
+                        UTILISATEUR
+                      </th>
+                      <th>
+                        TITRE OEUVRE
+                      </th>
+                      <th>ID LIVRE</th>
+                      <th>DATE RETOUR MAX</th>
+                      <th>ACTION</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <?php
+                    $query_pret = $bdd->query('SELECT E.ID_EMPRUNT, E.DATE_RETOUR, U.NOM_UTI, U.PRENOM_UTI, O.titre_oeuvre, O.id_oeuvre, L.ID_LIVRE
+                      FROM OEUVRE AS O
+                      INNER JOIN LIVRE AS L
+                      ON O.id_oeuvre = L.ID_OEUVRE
+                      INNER JOIN EMPRUNT as E
+                      ON L.ID_LIVRE = E.ID_LIVRE
+                      INNER JOIN UTILISATEUR as U
+                      on E.NUM_UTI = U.NUM_UTI
+                      WHERE E.STATUT = 1');
+                      while( $row = $query_pret -> fetch())
+                      { ?>
+                        <tr>
+                          <td>
+                            <?= $row['PRENOM_UTI'] . ' ' . $row['NOM_UTI'] ?>
+                          </td>
+                          <td><?= strtoupper($row['titre_oeuvre']) ?></td>
+                          <td><?= $row['ID_LIVRE'] ?></td>
+                          <td><?= $row['DATE_RETOUR'] ?></td>
+                          <td class="text-center"><a class='btn btn-info btn-xs' href='index.php?p=administration&action=retour_livre&id_emprunt=<?= $row['ID_EMPRUNT'] ?>'><span class="glyphicon glyphicon-ok"></span>Retour livre</a> </td>
+                        </tr>
+                      <?php } ?>
+
+                  </tbody>
+                </table>
+              <?php }
+            }
+            ?>
 
 
 
-    </div>
-  </div>
-</div>
+          </div>
+        </div>
+      </div>

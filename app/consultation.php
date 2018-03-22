@@ -13,6 +13,21 @@ if(isset($_POST['valider_commentaire']))
   header('location:index.php?p=consultation&action=detail&id_oeuvre='.$id_oeuvre);
 }
 
+if(isset($_GET['section']))
+{
+  if($_GET['section'] == 'pret')
+  {
+    $find_livre_dispo = $bdd -> prepare('SELECT L.ID_LIVRE FROM LIVRE as L LEFT JOIN EMPRUNT as E on L.ID_LIVRE = E.ID_LIVRE WHERE ID_EMPRUNT is null and ID_OEUVRE = ? LIMIT 1');
+    $find_livre_dispo -> execute(array($_GET['id_oeuvre']));
+    $tmp = $find_livre_dispo -> fetch();
+    $id_livre = $tmp['ID_LIVRE'];
+    date_default_timezone_set('Europe/Paris');
+    $date_reservation = date('Y-m-d');
+    $pret = $bdd -> prepare('INSERT INTO EMPRUNT(id_livre, num_uti) VALUES(?, ?)');
+    $pret -> execute(array($id_livre, $_SESSION['user_id']));
+  }
+}
+
 ?>
 
 <script>
@@ -122,7 +137,7 @@ body{margin-top:50px;}
                   Année de parution : <?= $row['ANNEE_PARUTION']; ?>
                 </p >
                 <?php
-                $find_nb_livres = $bdd -> prepare('SELECT * FROM LIVRE WHERE ID_OEUVRE = ?');
+                $find_nb_livres = $bdd -> prepare('SELECT * FROM LIVRE WHERE ID_OEUVRE = ? AND STATUT = 0');
                 $find_nb_livres -> execute(array($row['ID_OEUVRE']));
                 $count_livres = $find_nb_livres -> rowCount();
                 ?>
@@ -177,9 +192,9 @@ body{margin-top:50px;}
                     <p style="text-indent: 15px;"><?= $result_oeuvre['DESCRIPTION'] ?></p>
                     <br />
                     <br />
-
-                    <a class="btn icon-btn btn-info" href="#"><span class="glyphicon btn-glyphicon glyphicon-plus img-circle text-info"></span>Demande de réservation</a>
-
+                    <a class="btn icon-btn btn-info" href="index.php?p=consultation&action=detail&id_oeuvre=<?= $_GET['id_oeuvre'] ?>'&section=pret"><span class="glyphicon btn-glyphicon glyphicon-plus img-circle text-info"></span>Demande de prêt</a>
+                    <br />
+                    <br />
 
                     <?php
                     if(isset($_SESSION['user_id']))
