@@ -132,7 +132,17 @@ if(isset($_GET['action']))
   }
   else if($_GET['action'] == 'retour_livre')
   {
-    echo 'procédure de retour d\'un livre';
+    $infos_emprunt = $bdd -> prepare('SELECT * FROM EMPRUNT WHERE ID_EMPRUNT = ?');
+    $infos_emprunt -> execute(array($_GET['id_emprunt']));
+    $row = $infos_emprunt -> fetch();
+
+    $update_statut_livre = $bdd -> prepare('UPDATE LIVRE SET STATUT = 0 WHERE ID_LIVRE = ?');
+    $update_statut_livre -> execute(array($row['ID_LIVRE']));
+
+    $delete_emprunt = $bdd -> prepare('DELETE FROM EMPRUNT WHERE ID_EMPRUNT = ?');
+    $delete_emprunt -> execute(array($_GET['id_emprunt']));
+
+
   }
 
 
