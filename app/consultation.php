@@ -30,16 +30,6 @@ if(isset($_GET['section']))
 
 ?>
 
-<script>
-$(function() {
-  //autocomplete
-  $("#search").autocomplete({
-    source: "searchKeyWord.php",
-    minLength: 1
-  });
-});
-</script>
-
 <style>
 body{margin-top:50px;}
 .glyphicon { margin-right:10px; }
@@ -55,9 +45,49 @@ body{margin-top:50px;}
 }
 .btn-glyphicon { padding:8px; background:#ffffff; margin-right:4px; }
 .icon-btn { padding: 1px 15px 3px 2px; border-radius:50px;}
+#custom-search-input{
+  padding: 3px;
+  border: solid 1px #E4E4E4;
+  border-radius: 6px;
+  background-color: #fff;
+}
+
+#custom-search-input input{
+  border: 0;
+  box-shadow: none;
+}
+
+#custom-search-input button{
+  margin: 2px 0 0 0;
+  background: none;
+  box-shadow: none;
+  border: 0;
+  color: #666666;
+  padding: 0 8px 0 10px;
+  border-left: solid 1px #ccc;
+}
+
+#custom-search-input button:hover{
+  border: 0;
+  box-shadow: none;
+  border-left: solid 1px #ccc;
+}
+
+#custom-search-input .glyphicon-search{
+  font-size: 23px;
+}
 </style>
 
 <?php include '../includes/templates/header.php'; ?>
+
+<script>
+$(function() {
+  $("#aaa").autocomplete({
+    source: "searchAuteur.php",
+    minLength: 1
+  });
+});
+</script>
 
 <br />
 <div class="container-fluid">
@@ -99,172 +129,197 @@ body{margin-top:50px;}
 
       <?php } ?>
 
-    </div>
-    <div class="col-sm-9">
-
-      <?php
-      if(isset($_GET['id_sous_cat']) OR isset($_GET['motcle']))
-      {
-        $sql = 'SELECT O.ID_OEUVRE, O.COTE_OEUVRE, O.TITRE_OEUVRE, A.NOM_AUTEUR, A.PRENOM_AUTEUR, O.ANNEE_PARUTION FROM AUTEUR as A INNER JOIN OEUVRE as O on A.ID_AUTEUR = O.ID_AUTEUR INNER JOIN';
-        if(isset($_GET['id_sous_cat']))
-        {
-          $sql .= ' SOUS_CATEGORIE as SC on O.ID_SOUS_CATEGORIE = SC.ID_SOUS_CATEGORIE where SC.ID_SOUS_CATEGORIE = ?';
-          $array = array($_GET['id_sous_cat']);
-        }
-        else if(isset($_GET['motcle']))
-        {
-          $sql .= ' MOT_CLE_OEUVRE as MCO on O.COTE_OEUVRE = MCO.COTE_OEUVRE INNER JOIN MOT_CLE as MC on MCO.ID_MOT_CLE = MC.ID_MOT_CLE WHERE MC.LIBELLE_MOT_CLE = ?';
-          $array = array($_GET['motcle']);
-        }
-        $query_livres = $bdd->prepare($sql);
-        if( $query_livres -> execute($array))
-        {
-          while( $row = $query_livres -> fetch())
-          {
-
-            $tmp = $row['TITRE_OEUVRE']; $tmp = str_replace(' ', '', $tmp); ?>
-            <div class="row">
-              <div class="col-sm-4">
-                <img src="../images/oeuvres/<?= strtolower($tmp) ?>.jpg" style="width:50%">
-              </div>
-              <div class="col-sm-8">
-                <h4><?= $row['TITRE_OEUVRE']; ?></h4>
-                <br>
-                <p>
-                  Auteur : <?= $row['PRENOM_AUTEUR']. ' ' . $row['NOM_AUTEUR']; ?>
-                </p>
-                <p>
-                  Année de parution : <?= $row['ANNEE_PARUTION']; ?>
-                </p >
-                <?php
-                $find_nb_livres = $bdd -> prepare('SELECT * FROM LIVRE WHERE ID_OEUVRE = ? AND STATUT = 0');
-                $find_nb_livres -> execute(array($row['ID_OEUVRE']));
-                $count_livres = $find_nb_livres -> rowCount();
-                ?>
-                <p>
-                  Disponibilité : <i style="color:#2ecc71"><?= $count_livres ?> exemplaires disponibles</i>
-                </p>
-
-                <a href="index.php?p=consultation&action=detail&id_oeuvre=<?= $row['ID_OEUVRE'] ?>">En savoir plus</a>
-                <br />
-              </div>
-
-            </div>
-
-
-            <hr />
-
-
-          <?php } ?>
-
-        <?php  }
-
-      }
-      else if(isset($_GET['id_oeuvre']) && isset($_GET['action']))
-      {
-        if($_GET['action'] == 'detail')
-        { ?>
-          <div class="container">
-            <div class="row">
-              <div class="col-md-8">
-                <div class="page-header">
-
-                  <?php
-                  $informations_oeuvre = $bdd -> prepare('SELECT * FROM OEUVRE as O
-                    LEFT JOIN LIVRE as L
-                    ON O.id_oeuvre = L.ID_OEUVRE
-                    INNER JOIN AUTEUR as A
-                    ON O.id_auteur = A.ID_AUTEUR
-                    INNER JOIN CATEGORIE as C
-                    ON O.id_categorie = C.ID_CATEGORIE
-                    INNER JOIN SOUS_CATEGORIE as SC
-                    ON O.id_sous_categorie = SC.ID_SOUS_CATEGORIE
-                    WHERE O.id_oeuvre = ?');
-
-                    $informations_oeuvre -> execute(array($_GET['id_oeuvre']));
-                    $result_oeuvre = $informations_oeuvre -> fetch();
-                    ?>
-                    <img src="../images/oeuvres/<?= $result_oeuvre['illustration'] ?>" style="width:50%">
-                    <h3 style="color:#2c3e50"><?= strtoupper($result_oeuvre['titre_oeuvre']) ?></h3>
-                    <p><i style="color:#34495e"><?= $result_oeuvre['LIBELLE_CATEGORIE'] . '>' . $result_oeuvre['LIBELLE_SOUS_CATEGORIE'] ?></i></p>
-                    <p><i style="color:#34495e"><?= $result_oeuvre['PRENOM_AUTEUR'] . ' ' . $result_oeuvre['NOM_AUTEUR'], ', paru en ' . $result_oeuvre['annee_parution'] ?></i></p>
-                    <br />
-                    <p style="text-indent: 15px;"><?= $result_oeuvre['DESCRIPTION'] ?></p>
-                    <br />
-                    <br />
-                    <a class="btn icon-btn btn-info" href="index.php?p=consultation&action=detail&id_oeuvre=<?= $_GET['id_oeuvre'] ?>'&section=pret"><span class="glyphicon btn-glyphicon glyphicon-plus img-circle text-info"></span>Demande de prêt</a>
-                    <br />
-                    <br />
-
-                    <?php
-                    if(isset($_SESSION['user_id']))
-                    { ?>
-                      <h4><small class="pull-right" data-toggle="collapse" data-target="#demo">Ajouter un commentaire</small> Commentaires </h4>
-                    <?php }
-                    else
-                    { ?>
-                      <h4>Commentaires</h4>
-                    <?php }
-                    ?>
-
-                    <div id="demo" class="collapse">
-
-                      <form action="consultation.php" method="post">
-                        <div class="form-group">
-                          <?php   echo '<input type="hidden" class="form-control" name = "id_oeuvre"  value='.$_GET['id_oeuvre'].'>' ?>
-                          <label for="comment">Votre commentaire:</label>
-                          <textarea class="form-control" rows="5" id="comment" name="commentaire"></textarea>
-                        </div>
-                        <button type="submit" id="com" name="valider_commentaire" class="btn btn-default" onclick="myFunction()">Valider</button>
-                      </form>
-
-                      <script>
-                      function myFunction() {
-                        alert("<b>Votre commentaire a été envoyé!</b> Il est maintenant en attente de modération ");
-                      }
-                      </script>
-                    </div>
-                  </div>
-                  <div class="comments-list">
-
-                    <?php
-                    $find_comments = $bdd->prepare('SELECT U.NUM_UTI, U.NOM_UTI, U.PRENOM_UTI, U.AVATAR_UTI, C.ID_COM, C.TEXTE_COM, C.ID_OEUVRE, C.DATE_COM FROM UTILISATEUR as U INNER JOIN COMMENTAIRE as C on U.NUM_UTI = C.NUM_UTI WHERE C.ID_OEUVRE = ? AND C.STATUT = 1');
-                    $find_comments->execute(array($_GET['id_oeuvre']));
-
-                    while( $row = $find_comments -> fetch())
-                    { ?>
-                      <div class="media">
-                        <p class="pull-right"><small><?= $row['DATE_COM'] ?></small></p>
-                        <a class="media-left" href="#">
-                          <img src="../../images/utilisateurs/<?= $row['AVATAR_UTI']; ?>" style="width: 20px;" >
-                        </a>
-                        <div class="media-body">
-
-                          <h4 class="media-heading user_name"><?= $row['PRENOM_UTI'] . ' ' . $row['NOM_UTI'] ?></h4>
-                          <?= $row['TEXTE_COM'] ?>
-                        </div>
-
-
-                      </div>
-                      <br />
-                      <br />
-                    <?php }
-
-                    ?>
-
-                  </div>
-                </div>
-
-
-
-              </div>
-            </div>
+      <br />
+      <form method="post" action="consultation.php">
+        <div id="custom-search-input">
+          <div class="input-group col-md-12">
+            <input type="text" id="aaa" class="form-control input-lg" name="auteur" placeholder="Rechercher auteur..." />
+            <span class="input-group-btn">
+              <button type="submit" name="valider_auteur" class="btn btn-info btn-lg">
+                <i class="glyphicon glyphicon-search"></i>
+              </button>
+            </span>
           </div>
-        <?php }
-      } ?>
+        </div>
+      </form>
 
-    </div>
-
+    </br>
 
   </div>
+
+
+
+<div class="col-sm-9">
+
+  <?php
+  if(isset($_GET['id_sous_cat']) OR isset($_POST['auteur']))
+  {
+    $sql = 'SELECT O.ID_OEUVRE, O.COTE_OEUVRE, O.TITRE_OEUVRE, A.ID_AUTEUR, A.NOM_AUTEUR, A.PRENOM_AUTEUR, O.ANNEE_PARUTION FROM AUTEUR as A INNER JOIN OEUVRE as O on A.ID_AUTEUR = O.ID_AUTEUR ';
+    if(isset($_GET['id_sous_cat']))
+    {
+      $sql .= 'INNER JOIN SOUS_CATEGORIE as SC on O.ID_SOUS_CATEGORIE = SC.ID_SOUS_CATEGORIE where SC.ID_SOUS_CATEGORIE = ?';
+      $array = array($_GET['id_sous_cat']);
+    }
+    else if(isset($_POST['auteur']))
+    {
+      $nom_auteur =  $_POST['auteur'];
+      $supprimer = preg_replace( '/ .*/', '' ,$nom_auteur) ;
+      $nom_auteur= $supprimer;
+      $sql .= ' WHERE A.NOM_AUTEUR = ?;';
+      $array = array($nom_auteur);
+    }
+
+    $query_livres = $bdd->prepare($sql);
+    if( $query_livres -> execute($array))
+    {
+      while( $row = $query_livres -> fetch())
+      {
+
+        $tmp = $row['TITRE_OEUVRE']; $tmp = str_replace(' ', '', $tmp); ?>
+        <div class="row">
+          <div class="col-sm-4">
+            <img src="../images/oeuvres/<?= strtolower($tmp) ?>.jpg" style="width:50%">
+          </div>
+          <div class="col-sm-8">
+            <h4><?= $row['TITRE_OEUVRE']; ?></h4>
+            <br>
+            <p>
+              Auteur : <?= $row['PRENOM_AUTEUR']. ' ' . $row['NOM_AUTEUR']; ?>
+            </p>
+            <p>
+              Année de parution : <?= $row['ANNEE_PARUTION']; ?>
+            </p >
+            <?php
+            $find_nb_livres = $bdd -> prepare('SELECT * FROM LIVRE WHERE ID_OEUVRE = ? AND STATUT = 0');
+            $find_nb_livres -> execute(array($row['ID_OEUVRE']));
+            $count_livres = $find_nb_livres -> rowCount();
+            ?>
+            <p>
+              Disponibilité : <i style="color:#2ecc71"><?= $count_livres ?> exemplaires disponibles</i>
+            </p>
+
+            <a href="index.php?p=consultation&action=detail&id_oeuvre=<?= $row['ID_OEUVRE'] ?>">En savoir plus</a>
+            <br />
+          </div>
+
+        </div>
+
+
+        <hr />
+
+
+      <?php } ?>
+
+    <?php  }
+
+  }
+  else if(isset($_GET['id_oeuvre']) && isset($_GET['action']))
+  {
+    if($_GET['action'] == 'detail')
+    { ?>
+      <div class="container">
+        <div class="row">
+          <div class="col-md-8">
+            <div class="page-header">
+
+              <?php
+              $informations_oeuvre = $bdd -> prepare('SELECT * FROM OEUVRE as O
+                LEFT JOIN LIVRE as L
+                ON O.id_oeuvre = L.ID_OEUVRE
+                INNER JOIN AUTEUR as A
+                ON O.id_auteur = A.ID_AUTEUR
+                INNER JOIN CATEGORIE as C
+                ON O.id_categorie = C.ID_CATEGORIE
+                INNER JOIN SOUS_CATEGORIE as SC
+                ON O.id_sous_categorie = SC.ID_SOUS_CATEGORIE
+                WHERE O.id_oeuvre = ?');
+
+                $informations_oeuvre -> execute(array($_GET['id_oeuvre']));
+                $result_oeuvre = $informations_oeuvre -> fetch();
+                ?>
+                <img src="../images/oeuvres/<?= $result_oeuvre['illustration'] ?>" style="width:50%">
+                <h3 style="color:#2c3e50"><?= strtoupper($result_oeuvre['titre_oeuvre']) ?></h3>
+                <p><i style="color:#34495e"><?= $result_oeuvre['LIBELLE_CATEGORIE'] . '>' . $result_oeuvre['LIBELLE_SOUS_CATEGORIE'] ?></i></p>
+                <p><i style="color:#34495e"><?= $result_oeuvre['PRENOM_AUTEUR'] . ' ' . $result_oeuvre['NOM_AUTEUR'], ', paru en ' . $result_oeuvre['annee_parution'] ?></i></p>
+                <br />
+                <p style="text-indent: 15px;"><?= $result_oeuvre['DESCRIPTION'] ?></p>
+                <br />
+                <br />
+
+                <a class="btn icon-btn btn-info" href="index.php?p=consultation&action=detail&id_oeuvre=<?= $_GET['id_oeuvre'] ?>&section=pret"><span class="glyphicon btn-glyphicon glyphicon-plus img-circle text-info"></span>Demande de prêt</a>
+
+                <br />
+                <br />
+
+                <?php
+                if(isset($_SESSION['user_id']))
+                { ?>
+                  <h4><small class="pull-right" data-toggle="collapse" data-target="#demo">Ajouter un commentaire</small> Commentaires </h4>
+                <?php }
+                else
+                { ?>
+                  <h4>Commentaires</h4>
+                <?php }
+                ?>
+
+                <div id="demo" class="collapse">
+
+                  <form action="consultation.php" method="post">
+                    <div class="form-group">
+                      <?php   echo '<input type="hidden" class="form-control" name = "id_oeuvre"  value='.$_GET['id_oeuvre'].'>' ?>
+                      <label for="comment">Votre commentaire:</label>
+                      <textarea class="form-control" rows="5" id="comment" name="commentaire"></textarea>
+                    </div>
+                    <button type="submit" id="com" name="valider_commentaire" class="btn btn-default" onclick="myFunction()">Valider</button>
+                  </form>
+
+                  <script>
+                  function myFunction() {
+                    alert("<b>Votre commentaire a été envoyé!</b> Il est maintenant en attente de modération ");
+                  }
+                  </script>
+                </div>
+              </div>
+              <div class="comments-list">
+
+                <?php
+                $find_comments = $bdd->prepare('SELECT U.NUM_UTI, U.NOM_UTI, U.PRENOM_UTI, U.AVATAR_UTI, C.ID_COM, C.TEXTE_COM, C.ID_OEUVRE, C.DATE_COM FROM UTILISATEUR as U INNER JOIN COMMENTAIRE as C on U.NUM_UTI = C.NUM_UTI WHERE C.ID_OEUVRE = ? AND C.STATUT = 1');
+                $find_comments->execute(array($_GET['id_oeuvre']));
+
+                while( $row = $find_comments -> fetch())
+                { ?>
+                  <div class="media">
+                    <p class="pull-right"><small><?= $row['DATE_COM'] ?></small></p>
+                    <a class="media-left" href="#">
+                      <img src="../../images/utilisateurs/<?= $row['AVATAR_UTI']; ?>" style="width: 20px;" >
+                    </a>
+                    <div class="media-body">
+
+                      <h4 class="media-heading user_name"><?= $row['PRENOM_UTI'] . ' ' . $row['NOM_UTI'] ?></h4>
+                      <?= $row['TEXTE_COM'] ?>
+                    </div>
+
+
+                  </div>
+                  <br />
+                  <br />
+                <?php }
+
+                ?>
+
+              </div>
+            </div>
+
+
+
+          </div>
+        </div>
+      </div>
+    <?php }
+  } ?>
+
+</div>
+
+
+</div>
 </div>

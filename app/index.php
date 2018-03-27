@@ -26,3 +26,6 @@ elseif ($p == 'administration') {
 elseif ($p == 'recuperation_mdp') {
   require 'recuperation_mdp.php';
 }
+elseif ($p == 'profil') {
+  require 'profil.php';
+}

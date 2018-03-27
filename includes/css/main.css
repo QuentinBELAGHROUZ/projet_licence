@@ -6,9 +6,11 @@
 @import url('http://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css');
 
 body {
-  
+
     background-color: #f9f9f9;
+    background-image: url(../images/connexion.jpg);
 }
+
 
 /*REQUIRED*/
 .carousel-row {

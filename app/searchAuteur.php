@@ -7,7 +7,7 @@ if(isset($_GET['term']))
     $return_arr = array();
     $term = $_GET['term'];
 
-    $query = $bdd -> prepare('SELECT * FROM OEUVRE WHERE TITRE_OEUVRE LIKE :term');
+    $query = $bdd -> prepare('SELECT * FROM AUTEUR WHERE NOM_AUTEUR LIKE :term');
 
     $query -> execute(array('term' => '%' . $term . '%'));
 
@@ -15,10 +15,9 @@ if(isset($_GET['term']))
 
     while($row = $query -> fetch())
     {
-        $return_arr[] = $row['titre_oeuvre'];
+        $return_arr[] = $row['NOM_AUTEUR'] . ' ' . $row['PRENOM_AUTEUR'];
     }
 
     echo json_encode($return_arr);
-
 }
 ?>
