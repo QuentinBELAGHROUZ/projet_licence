@@ -142,7 +142,7 @@ if(isset($_GET['action']))
     $delete_emprunt = $bdd -> prepare('DELETE FROM EMPRUNT WHERE ID_EMPRUNT = ?');
     $delete_emprunt -> execute(array($_GET['id_emprunt']));
 
-
+    header('location:index.php?p=administration&action=pret');
   }
 
 
@@ -263,7 +263,7 @@ body{margin-top:50px;}
                 </tr>
                 <tr>
                   <td>
-                    <span class="glyphicon glyphicon-file text-info"></span><a href="index.php?p=administration&action=sous_categorie">##</a>
+                    <span class="glyphicon glyphicon-file text-info"></span><a href="index.php?p=administration&action=reservation">Reservations</a>
                   </td>
                 </tr>
               </table>
@@ -558,6 +558,9 @@ body{margin-top:50px;}
 
                   </tbody>
                 </table>
+              <?php }
+              else if ($_GET['action'] == 'reservation'){ ?>
+                <h2 style="color: #2980b9">Gestion des reservations</h4>
               <?php }
             }
             ?>

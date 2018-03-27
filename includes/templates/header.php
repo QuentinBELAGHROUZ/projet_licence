@@ -93,7 +93,7 @@ Free for personal and commercial use under the CCA 3.0 license (html5up.net/lice
                       <p class="text-left small"><?= $_SESSION['user_mail']; ?></p>
                       <p class="text-left small"><?= strtoupper($_SESSION['user_city']) . ' - ' . $_SESSION['user_postalcode']; ?> </p>
                       <p class="text-left">
-                        <a href="#" class="btn btn-primary btn-block btn-sm">Modifier informations</a>
+                        <a href="index.php?p=profil" class="btn btn-primary btn-block btn-sm">Mon profil</a>
                       </p>
                     </div>
                   </div>
