@@ -1,31 +1,27 @@
 <?php
 
 if(isset($_GET['p'])) {
-  $p = $_GET['p'];
+    $p = $_GET['p'];
 }
 else {
-  $p = 'home';
+    $p = 'home';
 }
 
 
 if($p === 'home') {
-  require 'home.php';
+    require 'home.php';
 }
 elseif ($p === 'connexion') {
-  require 'connexion.php';
+    require 'connexion.php';
 }
 elseif ($p == 'inscription') {
-  require 'inscription.php';
+    require 'inscription.php';
 }
 elseif ($p == 'consultation') {
-  require 'consultation.php';
+    require 'consultation.php';
 }
 elseif ($p == 'administration') {
-  require 'administration.php';
+    require 'administration.php';
 }
-elseif ($p == 'recuperation_mdp') {
-  require 'recuperation_mdp.php';
-}
-elseif ($p == 'profil') {
-  require 'profil.php';
-}
+
+
